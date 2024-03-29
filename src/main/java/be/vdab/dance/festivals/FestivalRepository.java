@@ -14,7 +14,7 @@ public class FestivalRepository {
         this.jdbcClient = jdbcClient;
     }
 
-    public List<Festival> finaAll() {
+    public List<Festival> findAll() {
         String sql = """
                 select id, naam, ticketsBeschikbaar, reclameBudget
                 from festivals
@@ -36,7 +36,7 @@ public class FestivalRepository {
                 .query(Festival.class)
                 .list();
     }
-    public void delete (long id) {
+    public void delete(long id) {
         String sql = """
                 delete from festivals
                 where id = ?
