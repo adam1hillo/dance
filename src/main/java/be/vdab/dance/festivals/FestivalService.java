@@ -3,6 +3,8 @@ package be.vdab.dance.festivals;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 @Service
@@ -27,5 +29,15 @@ public class FestivalService {
     @Transactional
     public long create(Festival festival) {
         return festivalRepository.create(festival);
+    }
+    @Transactional
+    public void anuleer(long id) {
+        Festival festival = festivalRepository.findAndLockById(id)
+                .orElseThrow(() -> new FestivalNietGevondenException(id));
+        festivalRepository.delete(id);
+        BigDecimal teVerdelenReclameBudget = festival.getReclameBudget();
+        BigDecimal aantalResterendeFestivals = BigDecimal.valueOf(festivalRepository.findAantal());
+        BigDecimal extraReclameBudgetPerFestival = teVerdelenReclameBudget.divide(aantalResterendeFestivals,2, RoundingMode.HALF_UP);
+        festivalRepository.verhoogBudget(extraReclameBudgetPerFestival);
     }
 }

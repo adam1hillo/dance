@@ -46,6 +46,11 @@ class FestivalRepositoryTest {
                 .query(Long.class)
                 .single();
     }
+    private long idVanTestFestival2() {
+        return jdbcClient.sql("select id from festivals where naam = 'test2'")
+                .query(Long.class)
+                .single();
+    }
     @Test
     void deleteVerwijdertEenFestival() {
         long id = idVanTestFestival1();
@@ -61,4 +66,32 @@ class FestivalRepositoryTest {
                 JdbcTestUtils.countRowsInTableWhere(jdbcClient, FESTIVALS_TABLE, "id = " + id);
         assertThat(aantalRecordsMetDeIdVanToegevoegdeFestival).isOne();
     }
+    @Test
+    void findAndLockByIdMetBestaandeIdVindtEenFestival() {
+        assertThat(festivalRepository.findAndLockById(idVanTestFestival1())).hasValueSatisfying(
+                festival -> assertThat(festival.getNaam()).isEqualTo("test1")
+        );
+    }
+    @Test
+    void findAndLockByIdMetOnbestaandeIdVindtGeenFestival() {
+        assertThat(festivalRepository.findAndLockById(Long.MAX_VALUE)).isEmpty();
+    }
+    @Test
+    void findAantalGeeftHetJuisteAantalFestivals() {
+        var aantalRecords = JdbcTestUtils.countRowsInTable(jdbcClient, FESTIVALS_TABLE);
+        assertThat(festivalRepository.findAantal()).isEqualTo(aantalRecords);
+    }
+    @Test
+    void verhoogBudgetVerhoogtHetBudgetVanEenFestival() {
+        long idTest1 = idVanTestFestival1();
+        long idTest2 = idVanTestFestival2();
+        festivalRepository.verhoogBudget(BigDecimal.TEN);
+        var aantalRecords = JdbcTestUtils.countRowsInTableWhere(jdbcClient, FESTIVALS_TABLE,
+                "reclameBudget = 110 and id = " + idTest1);
+        assertThat(aantalRecords).isOne();
+        aantalRecords = JdbcTestUtils.countRowsInTableWhere(jdbcClient, FESTIVALS_TABLE,
+                "reclameBudget = 10 and id = " + idTest2);
+        assertThat(aantalRecords).isOne();
+    }
+
 }
