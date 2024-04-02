@@ -31,7 +31,7 @@ public class FestivalService {
         return festivalRepository.create(festival);
     }
     @Transactional
-    public void anuleer(long id) {
+    public void annuleer(long id) {
         Festival festival = festivalRepository.findAndLockById(id)
                 .orElseThrow(() -> new FestivalNietGevondenException(id));
         festivalRepository.delete(id);
