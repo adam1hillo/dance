@@ -18,7 +18,7 @@ public class MyRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        Scanner scanner = new Scanner(System.in);
+        /*Scanner scanner = new Scanner(System.in);
         System.out.println("Typ uw naam:");
         String naam = scanner.nextLine();
         System.out.println("Typ aantal gewenste tickets:");
@@ -35,6 +35,8 @@ public class MyRunner implements CommandLineRunner {
             System.err.println("Festival " + ex.getId() + " niet gevonden.");
         } catch (OnvoldoendeTicketsBeschikbaarException ex) {
             System.err.println("Er zijn onvoldoende beschikbaare tickets");
-        }
+        }*/
+        boekingService.findBoekingenMetFestivals().forEach(System.out::println);
+
     }
 }
