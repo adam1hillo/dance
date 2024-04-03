@@ -14,7 +14,7 @@ public class BoekingService {
         this.festivalRepository = festivalRepository;
     }
 @Transactional
-    public void create (Boeking boeking) {
+    public void create(Boeking boeking) {
         Festival festival = festivalRepository.findAndLockById(boeking.getFestivalId())
                 .orElseThrow(() -> new FestivalNietGevondenException(boeking.getFestivalId()));
         festival.boek(boeking.getAantalTickets());
