@@ -1,7 +1,6 @@
 package be.vdab.dance;
 
-import be.vdab.dance.festivals.FestivalNietGevondenException;
-import be.vdab.dance.festivals.FestivalService;
+import be.vdab.dance.festivals.*;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
@@ -11,22 +10,31 @@ import java.util.Scanner;
 @Component
 public class MyRunner implements CommandLineRunner {
 
-    private final FestivalService festivalService;
+    private final BoekingService boekingService;
 
-    public MyRunner(FestivalService festivalService) {
-        this.festivalService = festivalService;
+    public MyRunner(BoekingService boekingService) {
+        this.boekingService = boekingService;
     }
 
     @Override
     public void run(String... args) {
         Scanner scanner = new Scanner(System.in);
-        System.out.println("Geef id om een festival te annuleren:");
-        long id = scanner.nextLong();
+        System.out.println("Typ uw naam:");
+        String naam = scanner.nextLine();
+        System.out.println("Typ aantal gewenste tickets:");
+        int aantalTickets = scanner.nextInt();
+        System.out.println("Typ id van een festival:");
+        var festivalId = scanner.nextInt();
         try {
-            festivalService.annuleer(id);
-            System.out.println("Festival geanuleerd (id: " + id + ")");
+            Boeking boeking = new Boeking(0, naam, aantalTickets, festivalId);
+            boekingService.create(boeking);
+            System.out.println(aantalTickets + " tickets geboekt van festival met id: " + festivalId);
+        } catch (IllegalArgumentException ex) {
+            System.err.println(ex.getMessage());
         } catch (FestivalNietGevondenException ex) {
-            System.err.println("Festival niet gevonden, id: " + ex.getId());
+            System.err.println("Festival " + ex.getId() + " niet gevonden.");
+        } catch (OnvoldoendeTicketsBeschikbaarException ex) {
+            System.err.println("Er zijn onvoldoende beschikbaare tickets");
         }
     }
 }

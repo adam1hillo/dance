@@ -10,6 +10,7 @@ import org.springframework.test.jdbc.JdbcTestUtils;
 import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 @JdbcTest
 @Import(FestivalRepository.class)
@@ -92,6 +93,20 @@ class FestivalRepositoryTest {
         aantalRecords = JdbcTestUtils.countRowsInTableWhere(jdbcClient, FESTIVALS_TABLE,
                 "reclameBudget = 10 and id = " + idTest2);
         assertThat(aantalRecords).isOne();
+    }
+    @Test
+    void updateWijzigtEenFestival () {
+        long id = idVanTestFestival1();
+        Festival festival = new Festival(id, "Festival1", 1, BigDecimal.TEN);
+        festivalRepository.update(festival);
+        var aantalAangepasteRecords = JdbcTestUtils.countRowsInTableWhere(jdbcClient, FESTIVALS_TABLE,
+                "id = " + id + " and naam = 'Festival1' and ticketsBeschikbaar = 1 and reclameBudget = 10");
+        assertThat(aantalAangepasteRecords).isOne();
+    }
+    @Test
+    void updateOnbestandeFestivalMislukt() {
+        assertThatExceptionOfType(FestivalNietGevondenException.class).isThrownBy(
+                () -> festivalRepository.update(new Festival(Long.MAX_VALUE, "test", 1, BigDecimal.TEN)));
     }
 
 }

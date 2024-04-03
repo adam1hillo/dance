@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 public class Festival {
     private final long id;
     private final String naam;
-    private final int ticketsBeschikbaar;
+    private int ticketsBeschikbaar;
     private final BigDecimal reclameBudget;
 
     public Festival(long id, String naam, int ticketsBeschikbaar, BigDecimal reclameBudget) {
@@ -29,5 +29,14 @@ public class Festival {
 
     public BigDecimal getReclameBudget() {
         return reclameBudget;
+    }
+    public void boek(int aantalTickets) {
+        if (aantalTickets <= 0) {
+            throw new IllegalArgumentException("Aantal tickets moet positief zijn");
+        }
+        if (aantalTickets > ticketsBeschikbaar) {
+            throw new OnvoldoendeTicketsBeschikbaarException();
+        }
+        ticketsBeschikbaar -= aantalTickets;
     }
 }

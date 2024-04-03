@@ -90,4 +90,17 @@ public class FestivalRepository {
                 .param(bedrag)
                 .update();
     }
+    public void update (Festival festival) {
+        String sql = """
+                update festivals
+                set naam = ?, ticketsBeschikbaar = ?, reclameBudget = ?
+                where id = ?
+                """;
+        if (jdbcClient.sql(sql)
+                .params(festival.getNaam(), festival.getTicketsBeschikbaar(), festival.getReclameBudget(), festival.getId())
+                .update() == 0) {
+            throw new FestivalNietGevondenException(festival.getId());
+        }
+
+    }
 }
