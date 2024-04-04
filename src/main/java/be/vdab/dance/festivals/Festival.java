@@ -39,4 +39,10 @@ public class Festival {
         }
         ticketsBeschikbaar -= aantalTickets;
     }
+    public void annuleerBoeking(int aantalTickets) {
+        if (aantalTickets <= 0) {
+            throw new IllegalArgumentException("Aantal tickets moet positief zijn");
+        }
+        ticketsBeschikbaar += aantalTickets;
+    }
 }

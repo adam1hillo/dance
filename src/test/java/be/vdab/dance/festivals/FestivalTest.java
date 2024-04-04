@@ -2,6 +2,9 @@ package be.vdab.dance.festivals;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+
 
 import java.math.BigDecimal;
 
@@ -32,5 +35,15 @@ public class FestivalTest {
     void boekenMisluktBijOnvoldoendeBeschikbaarTickets() {
         assertThatExceptionOfType(OnvoldoendeTicketsBeschikbaarException.class).isThrownBy(() -> festival.boek(101));
     }
+
+    @Test
+    void annuleerBoekingWijzigtHetAantalBeschikbaareTickets() {
+        festival.annuleerBoeking(10);
+        assertThat(festival.getTicketsBeschikbaar()).isEqualTo(110);
+    }
+    @ParameterizedTest
+    @ValueSource(ints = {0, -1})
+    void annuleerBoekingMisluktBijNulGevraagdeTickets(int aantalTickets) {
+        assertThatIllegalArgumentException().isThrownBy(()-> festival.annuleerBoeking(aantalTickets));    }
 
 }

@@ -36,7 +36,20 @@ public class MyRunner implements CommandLineRunner {
         } catch (OnvoldoendeTicketsBeschikbaarException ex) {
             System.err.println("Er zijn onvoldoende beschikbaare tickets");
         }*/
-        boekingService.findBoekingenMetFestivals().forEach(System.out::println);
 
+        /*Scanner scanner = new Scanner(System.in);
+        System.out.println("Id van de boeking:");
+        long id = scanner.nextLong();
+        try {
+            boekingService.annuleer(id);
+            System.out.println("Boeking geannuleerd");
+        } catch (IllegalArgumentException ex) {
+            System.err.println(ex.getMessage());
+        } catch (BoekingNietGevondenException ex) {
+            System.err.println("Boeking niet gevonden, id: " + ex.getId());
+        } catch (FestivalNietGevondenException ex) {
+            System.err.println("Festival niet gevonden, id: " + ex.getId());
+        }*/
+        boekingService.findAantalBoekingenPerFestival().forEach(System.out::println);
     }
 }

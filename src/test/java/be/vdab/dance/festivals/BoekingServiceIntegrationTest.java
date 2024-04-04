@@ -12,7 +12,7 @@ import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 @JdbcTest
 @Import({BoekingService.class, BoekingRepository.class, FestivalRepository.class})
-@Sql("/festivals.sql")
+@Sql({"/festivals.sql", "/boekingen.sql"})
 class BoekingServiceIntegrationTest {
 
     private final JdbcClient jdbcClient;
@@ -25,8 +25,13 @@ class BoekingServiceIntegrationTest {
         this.jdbcClient = jdbcClient;
         this.boekingService = boekingService;
     }
-    long idFestivalTest1() {
+    private long idFestivalTest1() {
         return jdbcClient.sql("select id from festivals where naam = 'test1'")
+                .query(Long.class)
+                .single();
+    }
+    private long idBoekingTest1() {
+        return jdbcClient.sql("select id from boekingen where naam = 'boekingTest1'")
                 .query(Long.class)
                 .single();
     }
@@ -50,5 +55,19 @@ class BoekingServiceIntegrationTest {
     void boekingMetOnvoldoendeAantalBeschikbaareTicketsMislukt() {
         assertThatExceptionOfType(OnvoldoendeTicketsBeschikbaarException.class).isThrownBy(
                 () -> boekingService.create(new Boeking(0, "testBoeking", 11, idFestivalTest1())));
+    }
+    @Test
+    void annuleerVerwijdertDeBoekingEnWijzgtBechikbaareTicketsInHetFestival() {
+        long idTestFestival = idFestivalTest1();
+        long idTestBoeking = idBoekingTest1();
+        boekingService.annuleer(idTestBoeking);
+        assertThat(JdbcTestUtils.countRowsInTableWhere(jdbcClient, BOEKINGEN_TABLE, "id = " + idTestBoeking)).isZero();
+        assertThat(JdbcTestUtils.countRowsInTableWhere(jdbcClient, FESTIVALS_TABLE,
+        " ticketsBeschikbaar = 11 and id = " + idTestFestival)).isOne();
+    }
+    @Test
+    void annuleerMetOnbestaandeBoekingIdMislukt() {
+        assertThatExceptionOfType(BoekingNietGevondenException.class).isThrownBy(
+                () -> boekingService.annuleer(Long.MAX_VALUE));
     }
 }

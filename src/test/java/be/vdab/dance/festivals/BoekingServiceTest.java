@@ -23,11 +23,14 @@ public class BoekingServiceTest {
     @Mock
     private BoekingRepository boekingRepository;
     private Festival festival;
+    private Boeking boeking;
 
     @BeforeEach
     void beforeEach() {
         boekingService = new BoekingService(boekingRepository, festivalRepository);
         festival = new Festival(1, "test1", 10, BigDecimal.TEN);
+        boeking = new Boeking(1, "testBoeking1", 10, 1);
+
     }
     @Test
     void createVoegtEenBoekingToeEnWizigtAantalBeschikbaareTickets() {
@@ -49,5 +52,21 @@ public class BoekingServiceTest {
         when(festivalRepository.findAndLockById(1)).thenReturn(Optional.of(festival));
         assertThatExceptionOfType(OnvoldoendeTicketsBeschikbaarException.class).isThrownBy(
                 () -> boekingService.create(new Boeking(0, "test", 11, 1)));
+    }
+    @Test
+    void annuleerVerwijdertDeBoekingEnWijzigtHetFestival() {
+        when(boekingRepository.findAndLockById(1)).thenReturn(Optional.of(boeking));
+        when(festivalRepository.findAndLockById(1)).thenReturn(Optional.of(festival));
+        boekingService.annuleer(1);
+        assertThat(festival.getTicketsBeschikbaar()).isEqualTo(20);
+        verify(festivalRepository).findAndLockById(1);
+        verify(festivalRepository).update(festival);
+        verify(boekingRepository).findAndLockById(1);
+        verify(boekingRepository).delete(1);
+    }
+    @Test
+    void annuleerMetOnbestandeBoekingIdMislukt() {
+        assertThatExceptionOfType(BoekingNietGevondenException.class).isThrownBy(
+                () -> boekingService.annuleer(Long.MAX_VALUE));
     }
 }

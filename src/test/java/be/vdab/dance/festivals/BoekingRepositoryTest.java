@@ -55,7 +55,7 @@ class BoekingRepositoryTest {
            assertThat(eenItem.festivalNaam()).isEqualTo("test2");
            assertThat(eenItem.aantalTickets()).isEqualTo(2);
         });
-        //andere manier
+        //andere manieer
         var rijMetTest1Boeking =
                 boekingen.stream()
                         .filter(boeking -> boeking.boekingNaam().equals("boekingTest1"))
@@ -63,5 +63,50 @@ class BoekingRepositoryTest {
                         .get();
         assertThat(rijMetTest1Boeking.aantalTickets()).isOne();
         assertThat(rijMetTest1Boeking.festivalNaam()).isEqualTo("test1");
+    }
+    long idVanTestBoeking1() {
+         return jdbcClient.sql("select id from boekingen where naam = 'boekingTest1'")
+                 .query(Long.class)
+                 .single();
+    }
+
+    @Test
+    void findAndLockByIdMetBestaandeIdVindtEenBoeking() {
+         assertThat(boekingRepository.findAndLockById(idVanTestBoeking1())).hasValueSatisfying(
+                 boeking -> {
+                     assertThat(boeking.getNaam()).isEqualTo("boekingTest1");
+                     assertThat(boeking.getAantalTickets()).isOne();
+                 });
+    }
+    @Test
+    void findAndLockByIdMetOnbestaandeIdVindtGeenBoeking() {
+         assertThat(boekingRepository.findAndLockById(Long.MAX_VALUE)).isEmpty();
+    }
+    @Test
+    void deleteVerwijdertEenBoeking() {
+         long id = idVanTestBoeking1();
+         boekingRepository.delete(id);
+         assertThat(JdbcTestUtils.countRowsInTableWhere(jdbcClient, BOEKINGEN_TABLE, "id = " + id)).isZero();
+    }
+    @Test
+    void findAantalBoekingenPerFestivalVindtJuisteData() {
+         List<AantalBoekingenPerFestival> statistiek = boekingRepository.findAantalBoekingenPerFestival();
+         assertThat(statistiek).extracting(AantalBoekingenPerFestival::id).isSorted();
+         assertThat(statistiek).anySatisfy(festival -> {
+             assertThat(festival.id()).isEqualTo(idVanTestFestival1());
+             assertThat(festival.naam()).isEqualTo("test1");
+             assertThat(festival.aantalBoekingen()).isEqualTo(1);
+         });
+         var rijMetFestival1Boekingen = statistiek
+                 .stream()
+                 .filter(festival -> festival.id() == idVanTestFestival1())
+                 .findFirst()
+                 .get();
+         assertThat(rijMetFestival1Boekingen.naam()).isEqualTo("test1");
+         assertThat(rijMetFestival1Boekingen.aantalBoekingen()).isEqualTo(1);
+
+         var rij1 = statistiek.get(0);
+         assertThat(rij1.aantalBoekingen()).isEqualTo(
+                 JdbcTestUtils.countRowsInTableWhere(jdbcClient, BOEKINGEN_TABLE, "festivalId = " + rij1.id()));
     }
 }

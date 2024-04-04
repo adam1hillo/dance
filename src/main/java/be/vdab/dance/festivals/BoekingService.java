@@ -26,4 +26,17 @@ public class BoekingService {
     public List<BoekingMetFestival> findBoekingenMetFestivals() {
         return boekingRepository.findBoekingenMetFestivals();
     }
+    @Transactional
+    public void annuleer(long id) {
+        Boeking boeking = boekingRepository.findAndLockById(id)
+                .orElseThrow(() -> new BoekingNietGevondenException(id));
+        Festival festival = festivalRepository.findAndLockById(boeking.getFestivalId())
+                .orElseThrow(() -> new FestivalNietGevondenException(boeking.getFestivalId()));
+        festival.annuleerBoeking(boeking.getAantalTickets());
+        festivalRepository.update(festival);
+        boekingRepository.delete(id);
+    }
+    public List<AantalBoekingenPerFestival> findAantalBoekingenPerFestival() {
+        return boekingRepository.findAantalBoekingenPerFestival();
+    }
 }
